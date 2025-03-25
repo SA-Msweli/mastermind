@@ -1,6 +1,7 @@
 // Learn more at developers.reddit.com/docs
 import { Devvit, useState } from '@devvit/public-api';
 import { generateCode, isCorrectCorrect, isCorrectWrong } from './mastermind.js';
+// import { NumPad, entry } from './numpad.js';
 
 Devvit.configure({
   redditAPI: true,
@@ -37,36 +38,85 @@ Devvit.addMenuItem({
 Devvit.addCustomPostType({
   name: 'Add New Mastermind Game',
   description: 'Create a new mastermind game to play with the community',
-  height: 'regular',
+  height: 'tall',
   render: (_context) => {
-    let codeNew = generateCode();
-    const [attempts, setAttempts] = useState(0);
-    const [guess, setGuess] = useState(``);
-    const [code, setCode] = useState(codeNew[0]);
-    const [hiddenCode, setHiddenCode] = useState(codeNew[1]);
+    const [words, setWords] = useState("");
     const [level, setLevel] = useState(0);
     const [difficulty, setDifficulty] = useState(1);
+    let [timer, setTimer] = useState(60);
+    let tried = 0;
+    const [attempts, setAttempts] = useState(0);
+    const [guess, setGuess] = useState("");
+    
+    let codeNew = generateCode(words, level, difficulty);
+    const [code, setCode] = useState(codeNew[0]);
+    const [hiddenCode, setHiddenCode] = useState(codeNew[1]);
+
+    function NumPad({ n }: { n: number }) {
+      let [entry, setEntry] = useState("");
+      const [numbers, setNumbers] = useState(Array.from({length: n}, (_, i) => (i + 1).toString()));
+      
+      function Button({text}:{text:string}) {
+        return <button appearance='secondary' disabled={text === "*" || text === "#"}
+        onPress={()=>{
+          setEntry(entry=text);
+        }}>{text}</button>;
+      }
+    
+      function ButtonRow({row}:{row:string[]}) {
+        return (
+          <hstack gap='medium'>
+            {row.map((button) => (
+              <Button text={button.toString()}></Button>
+            ))}
+          </hstack>
+        );
+      }
+    
+      function ButtonGrid({numbers}:{numbers:string[]}) {
+        return (
+          <vstack gap='medium'>
+            <ButtonRow row={numbers.slice(0, 3)}></ButtonRow>
+            <ButtonRow row={numbers.slice(3, 6)}></ButtonRow>
+            <ButtonRow row={numbers.slice(6, 9)}></ButtonRow>
+            <ButtonRow row={["*","0","#"]}></ButtonRow>
+          </vstack>
+        );
+      }
+    
+      return (
+        ButtonGrid({numbers: numbers})
+      );
+    }
+
+    function evalGuess() {
+    }
+
+    function tryGuess() {
+      set
+    }
 
     return (
-      <vstack height="100%" width="100%" gap="medium" alignment="start top">
-        <image
-          url="logo.png"
-          description="logo"
-          imageHeight={256}
-          imageWidth={256}
-          height="48px"
-          width="48px"
-        />
-        <text size="medium">{`Here is your clue ${hiddenCode}`}:</text>
-        <text size="medium">Enter your guess:</text>
-        <text size="large">{`You have tried: ${attempts} time(s)`}</text>
-        <button appearance="primary" onPress={() => {
-          codeNew = generateCode();
-          setCode(codeNew[0]);
-          setHiddenCode(codeNew[1]);
-        }}>
-          Click me!
-        </button>
+      <vstack height="100%" width="100%" gap="small" alignment="center top">
+
+        <hstack gap="large">
+          <image
+            url="logo.png"
+            description="logo"
+            imageHeight={256}
+            imageWidth={256}
+            height="60px"
+            width="60px" />
+          <vstack gap="small">
+            <text size="large" wrap={true} alignment='start middle'>Break the code before time runs out!</text>
+            <text size="xxlarge">{timer}</text>
+          </vstack>
+        </hstack>
+
+        <text size="xxlarge">{hiddenCode}</text>
+        <text size="xxlarge">{guess}</text>
+        {/* <text size="large">{`You have tried: ${attempts} time(s)`}</text> */}
+        <NumPad n={9}></NumPad>
       </vstack>
     );
   },
