@@ -1,4 +1,3 @@
-// Learn more at developers.reddit.com/docs
 import { Devvit, useState } from '@devvit/public-api';
 import { generateCode, isCorrectCorrect, isCorrectWrong } from './mastermind.js';
 // import { NumPad, entry } from './numpad.js';
@@ -44,26 +43,35 @@ Devvit.addCustomPostType({
     const [level, setLevel] = useState(0);
     const [difficulty, setDifficulty] = useState(1);
     let [timer, setTimer] = useState(60);
-    let tried = 0;
-    const [attempts, setAttempts] = useState(0);
-    const [guess, setGuess] = useState("");
-    
+    let [tried, setTried] = useState(false);
+    let [guess, setGuess] = useState("");
+    let [message1, setMessage1] = useState("");
+    let [message2, setMessage2] = useState("");
+    let [message, setMessage] = useState("");
+
     let codeNew = generateCode(words, level, difficulty);
     const [code, setCode] = useState(codeNew[0]);
     const [hiddenCode, setHiddenCode] = useState(codeNew[1]);
 
     function NumPad({ n }: { n: number }) {
-      let [entry, setEntry] = useState("");
-      const [numbers, setNumbers] = useState(Array.from({length: n}, (_, i) => (i + 1).toString()));
-      
-      function Button({text}:{text:string}) {
+      const [numbers, setNumbers] = useState(Array.from({ length: n }, (_, i) => (i + 1).toString()));
+
+      function Button({ text }: { text: string }) {
         return <button appearance='secondary' disabled={text === "*" || text === "#"}
-        onPress={()=>{
-          setEntry(entry=text);
-        }}>{text}</button>;
+          onPress={() => {
+            setGuess(guess + text);
+            if (guess.length === guess.length)
+              checkAttemp()
+            else {
+              if (tried) {
+                setTried(false);
+                setGuess(text);
+              }
+            }
+          }}>{text}</button>;
       }
-    
-      function ButtonRow({row}:{row:string[]}) {
+
+      function ButtonRow({ row }: { row: string[] }) {
         return (
           <hstack gap='medium'>
             {row.map((button) => (
@@ -72,28 +80,33 @@ Devvit.addCustomPostType({
           </hstack>
         );
       }
-    
-      function ButtonGrid({numbers}:{numbers:string[]}) {
+
+      function ButtonGrid({ numbers }: { numbers: string[] }) {
         return (
           <vstack gap='medium'>
             <ButtonRow row={numbers.slice(0, 3)}></ButtonRow>
             <ButtonRow row={numbers.slice(3, 6)}></ButtonRow>
             <ButtonRow row={numbers.slice(6, 9)}></ButtonRow>
-            <ButtonRow row={["*","0","#"]}></ButtonRow>
+            <ButtonRow row={["*", "0", "#"]}></ButtonRow>
           </vstack>
         );
       }
-    
+
       return (
-        ButtonGrid({numbers: numbers})
+        ButtonGrid({ numbers: numbers })
       );
     }
 
     function evalGuess() {
     }
 
-    function tryGuess() {
-      set
+    function checkAttemp() {
+      if (code === guess) {
+        setMessage("Congatulations you WIN!")
+      } else {
+        setMessage1(`${isCorrectCorrect(code, guess)}`);
+        setMessage2(`${isCorrectWrong(code, guess)}`);
+      }
     }
 
     return (
@@ -115,7 +128,9 @@ Devvit.addCustomPostType({
 
         <text size="xxlarge">{hiddenCode}</text>
         <text size="xxlarge">{guess}</text>
-        {/* <text size="large">{`You have tried: ${attempts} time(s)`}</text> */}
+        <text size='large'>{message}</text>
+        <text size='large'>{message1}</text>
+        <text size='large'>{message2}</text>
         <NumPad n={9}></NumPad>
       </vstack>
     );
