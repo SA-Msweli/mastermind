@@ -40,40 +40,34 @@ Devvit.addCustomPostType({
   height: 'tall',
   render: (_context) => {
     const [words, setWords] = useState("");
+    const [stage, setStage] = useState(1);
     const [level, setLevel] = useState(0);
     const [difficulty, setDifficulty] = useState(1);
-    let [timer, setTimer] = useState(60);
-    let [tried, setTried] = useState(false);
-    let [guess, setGuess] = useState("");
-    let [message1, setMessage1] = useState("");
-    let [message2, setMessage2] = useState("");
-    let [message, setMessage] = useState("");
+    const [timer, setTimer] = useState(60);
+    const [passed, setPassed] = useState(false);
+    const [attempted, setAttempted] = useState(false);
+    const [guess, setGuess] = useState("");
+    const [message1, setMessage1] = useState("");
+    const [message2, setMessage2] = useState("");
+    const [message, setMessage] = useState("");
 
     let codeNew = generateCode(words, level, difficulty);
     const [code, setCode] = useState(codeNew[0]);
     const [hiddenCode, setHiddenCode] = useState(codeNew[1]);
 
-    function NumPad({ n }: { n: number }) {
+    function NumPad({ n }: { n: number }): JSX.Element {
       const [numbers, setNumbers] = useState(Array.from({ length: n }, (_, i) => (i + 1).toString()));
 
-      function Button({ text }: { text: string }) {
+      function Button({ text }: { text: string }): JSX.Element {
         return <button appearance='secondary' disabled={text === "*" || text === "#"}
           onPress={() => {
-            setGuess(guess + text);
-            if (guess.length === guess.length)
-              checkAttemp()
-            else {
-              if (tried) {
-                setTried(false);
-                setGuess(text);
-              }
-            }
+            buttonPress(text);
           }}>{text}</button>;
       }
 
-      function ButtonRow({ row }: { row: string[] }) {
+      function ButtonRow({ row }: { row: string[] }): JSX.Element {
         return (
-          <hstack gap='medium'>
+          <hstack gap='small'>
             {row.map((button) => (
               <Button text={button.toString()}></Button>
             ))}
@@ -81,9 +75,9 @@ Devvit.addCustomPostType({
         );
       }
 
-      function ButtonGrid({ numbers }: { numbers: string[] }) {
+      function ButtonGrid({ numbers }: { numbers: string[] }): JSX.Element {
         return (
-          <vstack gap='medium'>
+          <vstack gap='small'>
             <ButtonRow row={numbers.slice(0, 3)}></ButtonRow>
             <ButtonRow row={numbers.slice(3, 6)}></ButtonRow>
             <ButtonRow row={numbers.slice(6, 9)}></ButtonRow>
@@ -97,22 +91,73 @@ Devvit.addCustomPostType({
       );
     }
 
-    function evalGuess() {
-    }
-
-    function checkAttemp() {
-      if (code === guess) {
-        setMessage("Congatulations you WIN!")
-      } else {
-        setMessage1(`${isCorrectCorrect(code, guess)}`);
-        setMessage2(`${isCorrectWrong(code, guess)}`);
+    function buttonPress(text: string): void {
+      const userCode = guess + text;
+      setGuess(userCode);
+      if (userCode.length === code.length)
+        attempt(userCode)
+      else {
+        if (attempted) {
+          setAttempted(false);
+          setMessage("");
+          setMessage1("");
+          setMessage2("");
+        }
       }
     }
 
-    return (
-      <vstack height="100%" width="100%" gap="small" alignment="center top">
+    function attempt(userCode: string): void {
+      console.log(code, userCode);
+      if (code === userCode) {
+        win();
+      } else {
+        lose(userCode);
+      }
+      setAttempted(true);
+      setGuess("");
+    }
 
-        <hstack gap="large">
+    function win(): void {
+      setHiddenCode(code);
+      setMessage("PASSED!")
+      setMessage1("");
+      setMessage2("");
+      setPassed(true);
+    }
+
+    function lose(userCode: string): void {
+      setMessage("FAILED!")
+      setMessage1(`Correct in correct place: ${isCorrectCorrect(code, userCode)}`);
+      setMessage2(`Correct in incorrect place: ${isCorrectWrong(code, userCode)}`);
+    }
+
+    function nextStage(): void {
+      if (difficulty < code.length) {
+        setDifficulty(difficulty + 1);
+        startGame(level, difficulty + 1);
+      } else {
+        setDifficulty(difficulty - 2);
+        startGame(level + 1, difficulty - 2);
+      }
+      setStage(stage + 1);
+    }
+
+    function startGame(level: number, difficulty: number): void {
+      codeNew = generateCode(words, level, difficulty);
+      setCode(codeNew[0]);
+      setHiddenCode(codeNew[1]);
+      setTimer(60);
+      setAttempted(false);
+      setPassed(false);
+      setMessage("");
+    }
+
+    function home() { }
+
+    return (
+      <vstack height="100%" width="100%" gap="small" alignment="center middle">
+
+        <hstack gap="large" alignment='center middle'>
           <image
             url="logo.png"
             description="logo"
@@ -121,17 +166,28 @@ Devvit.addCustomPostType({
             height="60px"
             width="60px" />
           <vstack gap="small">
-            <text size="large" wrap={true} alignment='start middle'>Break the code before time runs out!</text>
-            <text size="xxlarge">{timer}</text>
+            <text size="large" wrap={true} alignment='start middle'>Break the code</text>
+            <text size="xlarge">{`Time: ${timer}'`}</text>
+            <text size='large' alignment='middle end'>{`Stage: ${stage}`}</text>
           </vstack>
         </hstack>
 
         <text size="xxlarge">{hiddenCode}</text>
         <text size="xxlarge">{guess}</text>
-        <text size='large'>{message}</text>
+        <text size='xxlarge'>{message}</text>
         <text size='large'>{message1}</text>
         <text size='large'>{message2}</text>
-        <NumPad n={9}></NumPad>
+        <hstack gap='small'>
+          <NumPad n={9}></NumPad>
+          <vstack gap='small' alignment='bottom center'>
+            <button appearance='success' width="100%" disabled={!passed} onPress={() => {
+              nextStage();
+            }}>Continue</button>
+            <button appearance='caution' width="100%" disabled={!passed} onPress={() => {
+              home();
+            }}>Quit</button>
+          </vstack>
+        </hstack>
       </vstack>
     );
   },

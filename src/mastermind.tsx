@@ -62,5 +62,8 @@ export function isCorrectCorrect(code:string="", guess:string=""):number {
 
 export function isCorrectWrong(code:string="", guess:string=""):number {
   let count = 0;
+  for (let i = 0; i < code.length; i++) {
+    if (code[i] !== guess[i] && code.includes(guess[i])) count++;
+  }
   return count;
 }
