@@ -164,12 +164,22 @@ Devvit.addCustomPostType({
       startGame(0, 1);
     }
 
+    function imageSrc():string{
+      console.log(passed);
+      if(passed) {
+        const dir = `happy${Math.floor(Math.random()*4+1)}.png`;
+        console.log(dir);
+        return dir;
+      }
+      return `${difficulty}.png`;
+    }
+
     return (
       <vstack height="100%" width="100%" gap="small" alignment="center middle">
 
         <hstack gap='large' alignment='end middle'>
           <image
-            url={`${difficulty}.png`}
+            url={imageSrc()}
             description="difficulty"
             imageHeight={256}
             imageWidth={256}
