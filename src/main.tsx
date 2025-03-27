@@ -44,6 +44,7 @@ Devvit.addCustomPostType({
     const [level, setLevel] = useState(0);
     const [difficulty, setDifficulty] = useState(1);
     const [timer, setTimer] = useState(60);
+    const [counting, setCounting] = useState(false);
     const [passed, setPassed] = useState(false);
     const [attempted, setAttempted] = useState(false);
     const [guess, setGuess] = useState("");
@@ -92,6 +93,10 @@ Devvit.addCustomPostType({
     }
 
     function buttonPress(text: string): void {
+      if(!counting){
+        countdown();
+        setCounting(true);
+      }
       const userCode = guess + text;
       setGuess(userCode);
       if (userCode.length === code.length)
@@ -113,6 +118,9 @@ Devvit.addCustomPostType({
       } else {
         lose(userCode);
       }
+      if (0 < timer) {
+        setTimer(60);
+      }
       setAttempted(true);
       setGuess("");
     }
@@ -126,20 +134,42 @@ Devvit.addCustomPostType({
     }
 
     function lose(userCode: string): void {
-      setMessage("FAILED!")
-      setMessage1(`Correct in correct place: ${isCorrectCorrect(code, userCode)}`);
-      setMessage2(`Correct in incorrect place: ${isCorrectWrong(code, userCode)}`);
+      if(timer===0){
+        setMessage("TIME'S UP!");
+      }else{
+        setMessage("FAILED!")
+        setMessage1(`Correct in correct place: ${isCorrectCorrect(code, userCode)}`);
+        setMessage2(`Correct in incorrect place: ${isCorrectWrong(code, userCode)}`);
+      }
     }
 
     function nextStage(): void {
       if (difficulty < code.length) {
-        setDifficulty(difficulty + 1);
+        setDifficulty((difficulty:number)=>difficulty + 1);
         startGame(level, difficulty + 1);
       } else {
-        setDifficulty(difficulty - 2);
+        setDifficulty((difficulty:number)=>difficulty - 2);
+        setLevel((level:number)=>level + 1);
         startGame(level + 1, difficulty - 2);
       }
-      setStage(stage + 1);
+      setStage((stage:number)=>stage + 1);
+      countdown();
+    }
+
+    async function countdown(): Promise<void> {
+      const interval = setInterval(() => {
+        setTimer((timer:number)=>timer - 1);
+        if (timer === 0) {
+          clearInterval(interval);
+          setCounting(false);
+          lose("");
+        }
+        if (passed && counting) {
+          clearInterval(interval);
+          setCounting(false);
+        }
+        console.log(timer);
+      }, 1000);
     }
 
     function startGame(level: number, difficulty: number): void {
@@ -157,18 +187,18 @@ Devvit.addCustomPostType({
     return (
       <vstack height="100%" width="100%" gap="small" alignment="center middle">
 
-        <hstack gap="large" alignment='center middle'>
+        <hstack gap='large' alignment='end middle'>
           <image
-            url="logo.png"
-            description="logo"
+            url={`${difficulty}.png`}
+            description="difficulty"
             imageHeight={256}
             imageWidth={256}
-            height="60px"
-            width="60px" />
+            height="100px"
+            width="100px" />
           <vstack gap="small">
             <text size="large" wrap={true} alignment='start middle'>Break the code</text>
-            <text size="xlarge">{`Time: ${timer}'`}</text>
-            <text size='large' alignment='middle end'>{`Stage: ${stage}`}</text>
+            <text alignment='start' size='large'>{`Stage: ${stage}`}</text>
+            <text alignment='start' size="large">{`Time: ${timer}'`}</text>
           </vstack>
         </hstack>
 
