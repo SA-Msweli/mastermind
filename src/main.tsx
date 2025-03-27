@@ -43,7 +43,6 @@ Devvit.addCustomPostType({
     const [stage, setStage] = useState(1);
     const [level, setLevel] = useState(0);
     const [difficulty, setDifficulty] = useState(1);
-    const [counting, setCounting] = useState(false);
     const [passed, setPassed] = useState(false);
     const [attempted, setAttempted] = useState(false);
     const [guess, setGuess] = useState("");
@@ -92,9 +91,6 @@ Devvit.addCustomPostType({
     }
 
     function buttonPress(text: string): void {
-      if(!counting){
-        setCounting(true);
-      }
       const userCode = guess + text;
       setGuess(userCode);
       if (userCode.length === code.length)
@@ -155,7 +151,18 @@ Devvit.addCustomPostType({
       setMessage("");
     }
 
-    function reset() { }
+    function reset() {
+      setLevel(0);
+      setDifficulty(1);
+      setAttempted(false);
+      setPassed(false);
+      setGuess("");
+      setMessage("");
+      setMessage1("");
+      setMessage2("");
+      setPassed(false);
+      startGame(0, 1);
+    }
 
     return (
       <vstack height="100%" width="100%" gap="small" alignment="center middle">
@@ -185,7 +192,7 @@ Devvit.addCustomPostType({
             <button appearance='success' width="100%" disabled={!passed} onPress={() => {
               nextStage();
             }}>Continue</button>
-            <button appearance='caution' width="100%" disabled={!passed} onPress={() => {
+            <button appearance='caution' width="100%" onPress={() => {
               reset();
             }}>Reset</button>
           </vstack>
