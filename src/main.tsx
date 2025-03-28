@@ -106,7 +106,6 @@ Devvit.addCustomPostType({
     }
 
     function attempt(userCode: string): void {
-      console.log(code, userCode);
       if (code === userCode) {
         win();
       } else {
@@ -165,10 +164,8 @@ Devvit.addCustomPostType({
     }
 
     function imageSrc():string{
-      console.log(passed);
       if(passed) {
         const dir = `happy${Math.floor(Math.random()*4+1)}.png`;
-        console.log(dir);
         return dir;
       }
       return `${difficulty}.png`;
